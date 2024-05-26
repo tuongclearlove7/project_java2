@@ -13,7 +13,7 @@ public class HomeController {
     @GetMapping(value = {"/"})
     private String index(){
 
-        return "index";
+        return "redirect:/api/v1/hello";
     }
 
 

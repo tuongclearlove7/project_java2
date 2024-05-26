@@ -23,6 +23,7 @@ public class GetApiController {
         list.add("toi la tuong");
         JSONObject object = new JSONObject();
         object.put("message","Hello world!");
+        object.put("API-management","https://project-java2.onrender.com/swagger-ui/index.html");
         object.put("owner",list);
 
         return new ResponseEntity<>(object, HttpStatus.OK);
