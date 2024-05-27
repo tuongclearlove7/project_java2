@@ -7,7 +7,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ProjectJava2Application {
 
     public static void main(String[] args) {
+
+
         SpringApplication.run(ProjectJava2Application.class, args);
+        System.out.println("Running...");
+
+
     }
 
 }
