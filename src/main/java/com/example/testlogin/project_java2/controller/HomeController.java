@@ -1,6 +1,8 @@
 package com.example.testlogin.project_java2.controller;
 
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,8 +15,11 @@ public class HomeController {
     @GetMapping(value = {"/"})
     private String index(){
 
-        return "redirect:/api/v1/hello";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        return "redirect:/swagger-ui/index.html";
     }
+
 
 
 
