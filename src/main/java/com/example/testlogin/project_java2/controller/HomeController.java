@@ -16,7 +16,10 @@ public class HomeController {
     private String index(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
+        System.out.println(authentication.getPrincipal());
+        if(authentication.getPrincipal() == "anonymousUser"){
+            return "redirect:/login";
+        }
         return "redirect:/swagger-ui/index.html";
     }
 
