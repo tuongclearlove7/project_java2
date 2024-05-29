@@ -12,6 +12,7 @@ import com.example.testlogin.project_java2.service.BankAccountService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,6 +24,27 @@ public class BankAccountWorker implements BankAccountService {
 
     private BankAccountRepo bankAccountRepo;
     private UserRepo userRepo;
+
+    @Transactional
+    public boolean increase_amount_bank_account(double amount, String code, BankAccount bankAccountUser){
+        try{
+            System.out.println("amount user input: " + amount);
+            System.out.println("current amount in bank account " + bankAccountUser.getAmount());
+            if(bankAccountUser.getAmount() == 0.0){
+                bankAccountUser.setCode(code);
+                bankAccountUser.setAmount(amount);
+                Optional<BankAccount> bankAccountUpdated = bankAccountRepo.findById(bankAccountUser.getId());
+                bankAccountUpdated.ifPresent(bankAccount -> System.out.println("Amount in bank account updated " + bankAccount.getAmount()));
+                return true;
+            }
+            bankAccountUser.setCode(code);
+            bankAccountRepo.updateAmountByUser(bankAccountUser.getId(), code, amount);
+
+            return true;
+        }catch (Exception exception){
+            return false;
+        }
+    }
 
 
     @Override
@@ -38,17 +60,29 @@ public class BankAccountWorker implements BankAccountService {
 
             BankAccountDto bankAccountDto = new BankAccountDto();
             BankAccount bankAccount = new BankAccount();
-            bankAccount.setId(existingUser.getId());
-            bankAccount.setAmount(0);
-            bankAccount.setStatus(EnumConstant.isACTIVE);
-            bankAccount.setUserAccount(existingUser);
-            BankAccount newBankAccount = bankAccountRepo.save(bankAccount);
 
-            bankAccountDto.setId(newBankAccount.getId());
-            bankAccountDto.setAmount(newBankAccount.getAmount());
-            bankAccountDto.setStatus(newBankAccount.getStatus());
+            BankAccount bankAccountByUser = bankAccountRepo.findByUserAccount(user);
+
+            if(bankAccountByUser == null){
+                bankAccount.setId(existingUser.getId());
+                bankAccount.setAmount(0.0);
+                bankAccount.setStatus(EnumConstant.isACTIVE);
+                bankAccount.setUserAccount(existingUser);
+                BankAccount newBankAccount = bankAccountRepo.save(bankAccount);
+
+                bankAccountDto.setId(newBankAccount.getId());
+                bankAccountDto.setAmount(newBankAccount.getAmount());
+                bankAccountDto.setStatus(newBankAccount.getStatus());
+                bankAccountDto.setUserAccount(existingUser);
+                System.out.println("New BankAccount: " + bankAccountDto);
+
+                return bankAccountDto;
+            }
+
+            bankAccountDto.setId(bankAccountByUser.getId());
+            bankAccountDto.setAmount(bankAccountByUser.getAmount());
+            bankAccountDto.setStatus(bankAccountByUser.getStatus());
             bankAccountDto.setUserAccount(existingUser);
-            System.out.println("New BankAccount: " + bankAccountDto);
 
             return bankAccountDto;
         }
@@ -63,5 +97,10 @@ public class BankAccountWorker implements BankAccountService {
         return bankAccountDtoList.stream().map(
                 BankAccountMapper::mapToBankAccountApiDto
         ).collect(Collectors.toList());
+    }
+
+    @Override
+    public BankAccount findByUserAccount(UserAccount userAccount) {
+        return bankAccountRepo.findByUserAccount(userAccount);
     }
 }

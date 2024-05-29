@@ -10,6 +10,7 @@ public class BankAccountMapper {
 
         BankAccountDto bankAccountDto = BankAccountDto.builder()
                         .id(bankAccount.getId())
+                        .code(bankAccount.getCode())
                         .amount(bankAccount.getAmount())
                         .status(bankAccount.getStatus())
                         .userAccount(bankAccount.getUserAccount())

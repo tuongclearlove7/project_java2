@@ -60,7 +60,11 @@ public class UserAccount {
 
     @OneToOne(mappedBy = "userAccount", cascade = CascadeType.ALL)
     //annotion này giúp gỡ lỗi lặp vô hạn khi mapper qua tất cả các users
-    @JsonManagedReference
+    @JsonManagedReference("user-account-bank-account")
     private BankAccount bankAccount;
+
+    @OneToMany(mappedBy = "userAccount", cascade = CascadeType.REMOVE)
+    @JsonManagedReference("user-account-uploads")
+    private List<Upload> uploads = new ArrayList<>();
 
 }

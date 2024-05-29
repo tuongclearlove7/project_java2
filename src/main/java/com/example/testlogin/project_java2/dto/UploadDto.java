@@ -1,10 +1,8 @@
 package com.example.testlogin.project_java2.dto;
 
 
-import com.example.testlogin.project_java2.constant.EnumConstant;
 import com.example.testlogin.project_java2.model.Payment;
 import com.example.testlogin.project_java2.model.UserAccount;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
@@ -17,15 +15,18 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-public class BankAccountDto {
-
+public class UploadDto {
 
     private String id;
-    private String code;
-    @NotEmpty(message = "amount should not be empty!")
-    private double amount;
-    @NotEmpty(message = "status should not be empty!")
-    private EnumConstant status;
+    @NotEmpty(message = "file_name should not be empty!")
+    private String file_name;
+    @NotEmpty(message = "file_type should not be empty!")
+    private String file_type;
+    @NotEmpty(message = "data should not be empty!")
+    private byte[] data;
     private UserAccount userAccount;
     private List<Payment> payments = new ArrayList<>();
+
+
+
 }
