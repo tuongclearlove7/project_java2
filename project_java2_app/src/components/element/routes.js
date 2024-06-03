@@ -28,8 +28,6 @@ const dropdowns = [
     },
 ];
 
-
-
 export default {
     routes : routes,
     dropdowns : dropdowns

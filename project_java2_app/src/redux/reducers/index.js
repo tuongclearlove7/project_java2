@@ -1,13 +1,13 @@
 import { combineReducers } from "redux";
 import reducerArray from "./reducerArray";
-import auth_action from "../action/auth_action";
-import user_action from "../action/user_action";
+import auth_reducer from "../action/auth_action";
+import user_reducer from "../action/user_action";
 
 
-const allReducers = combineReducers({
+const rootReducers = combineReducers({
     Array: reducerArray,
-    Auth : auth_action,
-    User: user_action
+    auth : auth_reducer,
+    user : user_reducer
 });
 
-export default allReducers;
+export default rootReducers;
