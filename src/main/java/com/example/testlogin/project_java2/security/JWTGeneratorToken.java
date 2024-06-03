@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import java.util.Date;
 
@@ -21,6 +22,19 @@ public class JWTGeneratorToken {
 
         return Jwts.builder().setSubject(email).setIssuedAt(new Date())
                 .setExpiration(expireDate)
+                .signWith(SignatureAlgorithm.HS512, Security.JWT_SECRET)
+                .compact();
+    }
+
+
+    public String generateTokenExpiration(String username) {
+        Date now = new Date();
+        Date expirationDate = new Date(now.getTime() + 1000 * 60 * 60);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expirationDate)
                 .signWith(SignatureAlgorithm.HS512, Security.JWT_SECRET)
                 .compact();
     }

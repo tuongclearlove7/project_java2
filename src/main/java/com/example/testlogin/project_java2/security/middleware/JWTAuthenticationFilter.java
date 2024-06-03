@@ -22,6 +22,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,6 @@ public class JWTAuthenticationFilter  extends OncePerRequestFilter {
     private final JWTGeneratorToken tokenGenerator;
     private final CustomUserDetailsService customUserDetailsService;
     private static final Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
-
 
     @Autowired
     public JWTAuthenticationFilter(JWTGeneratorToken tokenGenerator, CustomUserDetailsService customUserDetailsService) {
@@ -64,19 +64,20 @@ public class JWTAuthenticationFilter  extends OncePerRequestFilter {
                     logger.warn("User authentication failed!");
                 }
             }
+
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException ex) {
-            logger.error(String.valueOf("Lỗi: "+ex));
+            logger.error(String.valueOf("Token expired "+ex));
             sendErrorResponse(response, "Token expired!");
         } catch (MalformedJwtException | UnsupportedJwtException ex) {
-            logger.error(String.valueOf("Lỗi: "+ex));
+            logger.error(String.valueOf("Invalid token! "+ex));
             sendErrorResponse(response, "Invalid token!");
         }
         catch (BadCredentialsException ex) {
-            logger.error(String.valueOf("Lỗi: "+ex));
+            logger.error(String.valueOf("Incorrect username or password "+ex));
             sendErrorResponse(response, "Incorrect username or password!");
         } catch (Exception error){
-            logger.error(String.valueOf("Lỗi: "+error));
+            logger.error(String.valueOf("Error: "+error));
             sendErrorResponse(response, String.valueOf(error));
         }
     }

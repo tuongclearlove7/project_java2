@@ -28,7 +28,7 @@ public class UserGetApiController {
     }
 
     @GetMapping("/profile")
-    private ResponseEntity<JSONObject> user(
+    private ResponseEntity<?> user(
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request
     ){
@@ -38,9 +38,9 @@ public class UserGetApiController {
             String userId = userService.findByEmail(userDetails.getUsername()).getId();
             UserResponseDto auth = new UserResponseDto(userId, token, userDetails);
 
-            object.put("user", auth);
+            System.out.println("Get user login: " + auth);
 
-            return new ResponseEntity<>(object, HttpStatus.OK);
+            return new ResponseEntity<>(auth, HttpStatus.OK);
         }catch (Exception exception){
             object.put("error",exception);
             return new ResponseEntity<>(object, HttpStatus.OK);

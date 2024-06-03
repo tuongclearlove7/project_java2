@@ -12,11 +12,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @RestController
@@ -27,6 +32,7 @@ public class AuthApiController {
     private final UserService userService;
     private final JWTGeneratorToken JWTGeneratorToken;
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
+    private final Set<String> invalidatedTokens = ConcurrentHashMap.newKeySet();
 
     @Autowired
     public AuthApiController(AuthenticationManager authenticationManager, UserService userService, com.example.testlogin.project_java2.security.JWTGeneratorToken jwtGeneratorToken, JWTAuthenticationFilter jwtAuthenticationFilter) {
@@ -37,7 +43,7 @@ public class AuthApiController {
     }
 
     @PostMapping("/login")
-    private ResponseEntity<JSONObject> login(@RequestBody UserDto userDto){
+    private ResponseEntity<?> login(@RequestBody UserDto userDto){
 
         JSONObject object = new JSONObject();
         try{
@@ -48,9 +54,8 @@ public class AuthApiController {
             Object principal = authentication.getPrincipal();
             String userId = userService.findByEmail(authentication.getName()).getId();
             UserResponseDto auth = new UserResponseDto(userId, token, principal);
-            object.put("user_login", auth);
 
-            return new ResponseEntity<>(object, HttpStatus.OK);
+            return new ResponseEntity<>(auth, HttpStatus.OK);
         }catch (Exception error){
 
             object.put("error", "Invalid username or password!");
@@ -59,18 +64,25 @@ public class AuthApiController {
     }
 
     @GetMapping("/logout")
-    ResponseEntity<JSONObject> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication){
+    ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response, HttpSession session){
 
-        SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-
-        logoutHandler.logout(request, response, authentication);
-        JSONObject object = new JSONObject();
-        object.put("message","logout successfully");
-
-        return new ResponseEntity<>(object, HttpStatus.OK);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SecurityContextHolder.clearContext();
+        session.invalidate();
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("JWT_TOKEN")) {
+                    cookie.setValue("");
+                    cookie.setMaxAge(0);
+                    cookie.setPath("/");
+                    response.addCookie(cookie);
+                    break;
+                }
+            }
+        }
+        return new ResponseEntity<>(authentication, HttpStatus.OK);
     }
-
-
 
 
 
