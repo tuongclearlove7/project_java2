@@ -8,6 +8,7 @@ import {notify} from "../../api/api";
 import {Outlet, useNavigate} from "react-router-dom";
 import axios from "axios"
 import { jwtDecode } from 'jwt-decode';
+import BankAccount from "../bank/BankAccount";
 const Home = () => {
 
     const dispatch = useDispatch();
@@ -17,9 +18,7 @@ const Home = () => {
     return (
         <div>
             {/*Array.isArray(user) && user.length === 0 <Unauthorized/>*/}
-            <h1>
-                {user?.object.username}
-            </h1>
+            <BankAccount/>
         </div>
     );
 };

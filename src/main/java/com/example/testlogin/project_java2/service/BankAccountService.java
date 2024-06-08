@@ -14,6 +14,8 @@ public interface BankAccountService {
 
     List<BankAccountDto> listBankAccountApi();
 
+    BankAccountDto getBankAccountDtoByUser(UserAccount userAccount);
+
     BankAccount findByUserAccount(UserAccount userAccount);
 
 }

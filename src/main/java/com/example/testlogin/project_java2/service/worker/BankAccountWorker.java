@@ -7,7 +7,6 @@ import com.example.testlogin.project_java2.model.BankAccount;
 import com.example.testlogin.project_java2.model.UserAccount;
 import com.example.testlogin.project_java2.repo.BankAccountRepo;
 import com.example.testlogin.project_java2.repo.UserRepo;
-import com.example.testlogin.project_java2.security.Security;
 import com.example.testlogin.project_java2.service.BankAccountService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -97,6 +96,20 @@ public class BankAccountWorker implements BankAccountService {
         return bankAccountDtoList.stream().map(
                 BankAccountMapper::mapToBankAccountApiDto
         ).collect(Collectors.toList());
+    }
+
+    @Override
+    public BankAccountDto getBankAccountDtoByUser(UserAccount userAccount) {
+
+        BankAccount bankAccount = bankAccountRepo.findByUserAccount(userAccount);
+        BankAccountDto bankAccountDto = new BankAccountDto();
+        bankAccountDto.setId(bankAccount.getId());
+        bankAccountDto.setCode(bankAccount.getCode());
+        bankAccountDto.setAmount(bankAccount.getAmount());
+        bankAccountDto.setStatus(bankAccount.getStatus());
+        bankAccountDto.setPayments(bankAccount.getPayments());
+
+        return bankAccountDto;
     }
 
     @Override

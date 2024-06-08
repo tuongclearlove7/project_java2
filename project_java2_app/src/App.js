@@ -5,6 +5,7 @@ import {BrowserRouter, Route, Routes, Outlet} from 'react-router-dom';
 import Footer from "./components/element/Footer";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import {useEffect} from "react";
 
 function App() {
 

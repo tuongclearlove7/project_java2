@@ -23,7 +23,9 @@ const user_action = createSlice({
             getUserFailed : (state)=>{
                 state.user.isFetching = false;
                 state.user.error = true;
-            }
+            },
+
+
         }
     }
 );
@@ -31,12 +33,7 @@ const user_action = createSlice({
 export const {
     getUserStart,
     getUserSuccess,
-    getUserFailed
+    getUserFailed,
 } = user_action.actions;
 
 export default user_action.reducer;
-
-
-
-
-

@@ -7,11 +7,15 @@ import {jwtDecode} from "jwt-decode";
 import {logout} from "../../redux/action/auth_action";
 import logo from "../../logo.svg";
 
-const ProtectedRoute = ({children}) => {
+const Auth = ({children}) => {
 
     const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.login?.currentUser);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        console.log("User: ",user);
+    }, []);
 
     const fetchUser = async () => {
         try {
@@ -44,4 +48,4 @@ const ProtectedRoute = ({children}) => {
     }
 };
 
-export default ProtectedRoute;
+export default Auth;

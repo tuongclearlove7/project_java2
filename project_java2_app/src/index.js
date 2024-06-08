@@ -10,7 +10,7 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import Home from "./components/Home/Home";
 import Login from "./components/auth/Login";
 import {PersistGate} from "redux-persist/integration/react";
-import ProtectedRoute from "./components/element/ProtectedRoute";
+import Auth from "./components/element/Auth";
 import View from "./components/Home/View";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -21,14 +21,14 @@ root.render(
               <BrowserRouter>
                   <Routes>
                       <Route path="/" element={<App/>}>
-                          <Route index element={<ProtectedRoute><Home /></ProtectedRoute>}/>
+                          <Route index element={<Auth><Home /></Auth>}/>
                           {list_nav.routes.map((route, index) => {
                               if (route.isProtected) {
                                   return (
                                       <Route
                                           key={index}
                                           path={route.path}
-                                          element={<ProtectedRoute>{route.element}</ProtectedRoute>}
+                                          element={<Auth>{route.element}</Auth>}
                                       />
                                   );
                               }

@@ -6,7 +6,7 @@ import {loginStart, loginSuccess, loginFailed} from '../redux/action/auth_action
 import {useSelector} from "react-redux";
 
 export const api = axios.create({
-    baseURL:"http://localhost:8080"
+    baseURL: process.env.REACT_APP_API_LOCALHOST
 });
 
 export const notify = (text, time)=>{

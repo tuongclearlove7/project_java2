@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {Link, NavLink} from "react-router-dom";
 import Logout from "../auth/Logout";
 import {useSelector} from "react-redux";
-import Unauthorized from "./Unauthorized";
 import {jwtDecode} from "jwt-decode";
 import list_nav from '../element/routes';
 import DropDown from "./DropDown";
