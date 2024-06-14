@@ -5,6 +5,7 @@ const auth_action = createSlice({
         initialState : {
             login : {
                 currentUser: null,
+                message : null,
                 isFetching: false,
                 error: false
             }
@@ -18,11 +19,13 @@ const auth_action = createSlice({
             loginSuccess : (state, action) =>{
 
                 state.login.isFetching = false;
+                state.login.message = "Login successfully";
                 state.login.currentUser = action.payload;
                 state.login.error = false;
             },
-            loginFailed : (state)=>{
+            loginFailed : (state, action)=>{
                 state.login.isFetching = false;
+                state.login.message = action.payload;
                 state.login.error = true;
             },
             logout: state => {

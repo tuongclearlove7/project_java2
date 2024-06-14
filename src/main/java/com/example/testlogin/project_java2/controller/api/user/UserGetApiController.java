@@ -2,11 +2,16 @@ package com.example.testlogin.project_java2.controller.api.user;
 
 
 import com.example.testlogin.project_java2.dto.BankAccountDto;
+import com.example.testlogin.project_java2.dto.TemporaryDto;
 import com.example.testlogin.project_java2.dto.UserResponseDto;
 import com.example.testlogin.project_java2.model.BankAccount;
 import com.example.testlogin.project_java2.model.UserAccount;
+import com.example.testlogin.project_java2.model.object.PaymentToken;
+import com.example.testlogin.project_java2.security.Security;
 import com.example.testlogin.project_java2.security.middleware.JWTAuthenticationFilter;
 import com.example.testlogin.project_java2.service.BankAccountService;
+import com.example.testlogin.project_java2.service.PaymentService;
+import com.example.testlogin.project_java2.service.TemporaryService;
 import com.example.testlogin.project_java2.service.UserService;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +21,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
@@ -25,12 +37,16 @@ public class UserGetApiController {
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
     private final UserService userService;
     private final BankAccountService bankAccountService;
+    private final PaymentService paymentService;
+    private final TemporaryService temporaryService;
 
     @Autowired
-    public UserGetApiController(JWTAuthenticationFilter jwtAuthenticationFilter, UserService userService, BankAccountService bankAccountService) {
+    public UserGetApiController(JWTAuthenticationFilter jwtAuthenticationFilter, UserService userService, BankAccountService bankAccountService, PaymentService paymentService, TemporaryService temporaryService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userService = userService;
         this.bankAccountService = bankAccountService;
+        this.paymentService = paymentService;
+        this.temporaryService = temporaryService;
     }
 
     @GetMapping("/profile")
@@ -68,7 +84,44 @@ public class UserGetApiController {
         }
     }
 
+    @GetMapping("/get_payment_token")
+    private ResponseEntity<?> get_payment_token(){
 
+        JSONObject object = new JSONObject();
+        try{
+            String payment_token = temporaryService.findPaymentTokenByUserId(
+            userService.findByEmail(Security.getSessionUser()).getId());
+            object.put("payment_token", payment_token);
+            return new ResponseEntity<>(object, HttpStatus.OK);
+
+        }catch (Exception exception){
+            object.put("error", exception);
+            return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/generate_payment_token")
+    private ResponseEntity<?> generate_payment_token(HttpServletRequest request)
+            throws IOException {
+        System.err.println("This request id is: " + request.getSession().getId());
+        JSONObject object = new JSONObject();
+        try{
+            String token = paymentService.generate_token();
+            if(temporaryService.countTemporariesByUserAccount(
+            userService.findByEmail(Security.getSessionUser())) >= 1){
+                object.put("message" , "Bạn đã tạo payment token nội dung thanh toán!");
+                return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
+            }
+            TemporaryDto temporaryDto = temporaryService.savePaymentToken(token);
+            object.put("message" , "Để xác thực hóa đơn thanh toán của bạn hãy nhập mã này vào nội dung thanh toán của bạn!");
+            object.put("data" ,temporaryDto);
+
+            return ResponseEntity.ok(object);
+        }catch  (Exception exception){
+            object.put("error", exception.getMessage());
+            return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 

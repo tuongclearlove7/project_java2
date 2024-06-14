@@ -1,27 +1,27 @@
 package com.example.testlogin.project_java2.service.worker;
 import com.example.testlogin.project_java2.dto.PaymentDto;
+import com.example.testlogin.project_java2.dto.TemporaryDto;
 import com.example.testlogin.project_java2.dto.UploadDto;
 import com.example.testlogin.project_java2.mapper.PaymentMapper;
-import com.example.testlogin.project_java2.model.BankAccount;
-import com.example.testlogin.project_java2.model.Payment;
-import com.example.testlogin.project_java2.model.Upload;
-import com.example.testlogin.project_java2.model.UserAccount;
-import com.example.testlogin.project_java2.repo.BankAccountRepo;
-import com.example.testlogin.project_java2.repo.PaymentRepo;
-import com.example.testlogin.project_java2.repo.UploadRepo;
-import com.example.testlogin.project_java2.repo.UserRepo;
+import com.example.testlogin.project_java2.model.*;
+import com.example.testlogin.project_java2.model.object.PaymentToken;
+import com.example.testlogin.project_java2.repo.*;
 import com.example.testlogin.project_java2.security.Security;
 import com.example.testlogin.project_java2.service.PaymentService;
+import com.example.testlogin.project_java2.service.TemporaryService;
 import com.example.testlogin.project_java2.service.UploadService;
 import net.minidev.json.JSONObject;
 import net.sourceforge.tess4j.TesseractException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import javax.transaction.Transactional;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import java.io.File;
-import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class PaymentWorker implements PaymentService {
+public class PaymentWorker implements PaymentService, TemporaryService {
 
 
     private final UploadRepo uploadRepo;
@@ -40,9 +40,10 @@ public class PaymentWorker implements PaymentService {
     private final OcrWorker ocrWorker;
     private final BankAccountWorker bankAccountWorker;
     private final UploadService uploadService;
+    private  final TemporaryRepo temporaryRepo;
 
     @Autowired
-    public PaymentWorker(UploadRepo uploadRepo, UserRepo userRepo, BankAccountRepo bankAccountRepo, PaymentRepo paymentRepo, OcrWorker ocrWorker, BankAccountWorker bankAccountWorker, UploadService uploadService) {
+    public PaymentWorker(UploadRepo uploadRepo, UserRepo userRepo, BankAccountRepo bankAccountRepo, PaymentRepo paymentRepo, OcrWorker ocrWorker, BankAccountWorker bankAccountWorker, UploadService uploadService, TemporaryRepo temporaryRepo) {
         this.uploadRepo = uploadRepo;
         this.userRepo = userRepo;
         this.bankAccountRepo = bankAccountRepo;
@@ -50,6 +51,7 @@ public class PaymentWorker implements PaymentService {
         this.ocrWorker = ocrWorker;
         this.bankAccountWorker = bankAccountWorker;
         this.uploadService = uploadService;
+        this.temporaryRepo = temporaryRepo;
     }
 
     @Override
@@ -64,17 +66,33 @@ public class PaymentWorker implements PaymentService {
 
 
     @Override
-    public PaymentDto create(File file, HttpSession session, JSONObject object,
-                             UploadDto uploadDto, BankAccount bankAccountUser
+    public PaymentDto create(File file, JSONObject object,
+                             UploadDto uploadDto, BankAccount bankAccountUser,
+                             String account_number_sent_to
     ) throws TesseractException {
 
         String dataScan = ocrWorker.getImageString(file);
 
-        String account_number_sent_to = find_number_send(dataScan);
-        String inherited_account_number = find_Inherited_account_number(dataScan);
-        double amount = find_amount(dataScan);
-        String content = find_content(dataScan);
+        String inherited_account_number = find_Inherited_account_number_test(dataScan);
+        double amount = find_amount_test(dataScan);
+        String content = find_content_test(dataScan);
         PaymentDto newPaymentDto = new PaymentDto();
+
+        if (account_number_sent_to == null ||
+        !account_number_sent_to.matches("[0-9]+")) {
+            newPaymentDto.setId(null);
+            newPaymentDto.setUser_bank_code(account_number_sent_to);
+            newPaymentDto.setDeposit_amount(amount);
+            newPaymentDto.setPayment_content(content);
+            newPaymentDto.setBankAccount(null);
+            newPaymentDto.setStatus_check_inherited_account_number(false);
+            newPaymentDto.setStatus_check_content(false);
+            newPaymentDto.setStatus_increase_amount(false);
+            object.put("payment_status",false);
+            object.put("error","Số tài khoản của bạn không hợp lệ!");
+
+            return newPaymentDto;
+        }
 
         if(bankAccountUser == null){
             newPaymentDto.setId(null);
@@ -116,6 +134,7 @@ public class PaymentWorker implements PaymentService {
             newPaymentDto.setPayment_content(newPaymentByUser.getPayment_content());
             Optional<BankAccount> bankAccountUpdated = bankAccountRepo.findById(bankAccountUser.getId());
             bankAccountUpdated.ifPresent(newPaymentDto::setBankAccount);
+            deletePaymentTokenByUserId(userRepo.findByEmail(Security.getSessionUser()).getId());
 
             newPaymentDto.setStatus_check_inherited_account_number(true);
             newPaymentDto.setStatus_check_content(true);
@@ -139,21 +158,39 @@ public class PaymentWorker implements PaymentService {
     }
 
     public boolean check_inherited_account_number(String inherited_account_number){
-
-        return Objects.equals(inherited_account_number, "104234245541");//104234245541
+        System.out.println("So sánh inherited_account_number: --" + inherited_account_number + "-- với --020089379998--");
+        return Objects.equals(inherited_account_number, "020089379998");//104234245541
     }
 
-    public boolean check_content(String content, HttpSession session){
-
-        String token = (String) session.getAttribute("paymentToken");
-
+    @Override
+    public boolean check_content(String content){
+        String token = findPaymentTokenByUserId(userRepo.findByEmail(Security.getSessionUser()).getId());
         return Objects.equals(content, token);
+    }
+
+    @Override
+    public void savePaymentToken(List<PaymentToken> paymentToken,
+                                 HttpServletRequest request,
+                                 String token, HttpSession session) {
+
+        if (paymentToken == null) {
+            paymentToken = new ArrayList<>();
+            request.getSession().setAttribute("paymentToken", paymentToken);
+        }
+        PaymentToken paymentTokenObj = new PaymentToken(token);
+        paymentToken.add(paymentTokenObj);
+        request.getSession().setAttribute("paymentToken", paymentToken);
+        List<PaymentToken> paymentTOKEN = (List<PaymentToken>) session.getAttribute("paymentToken");
+        for(PaymentToken token_ : paymentTOKEN){
+            System.out.println("Token đã lưu vao session: "+token_.getToken());
+        }
+        // Need persist to db
     }
 
     @Override
     public String generate_token() {
 
-        return "Product234234fsfsf3r3";//Product234234fsfsf3r3
+        return "1188033643";//Product234234fsfsf3r3
     }
 
     private String find_number_send(String data) {
@@ -193,17 +230,80 @@ public class PaymentWorker implements PaymentService {
         return "";
     }
 
+    @Override
+    public double find_amount_test(String data) {
+        Pattern pattern = Pattern.compile("(\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?)\\s*VND");
+        Matcher matcher = pattern.matcher(data);
+        if (matcher.find()) {
+            String amountStr = matcher.group(1).replaceAll(",", "");
+            return Double.parseDouble(amountStr);
+        }
+        return 0.0;
+    }
+
+    @Override
+    public String find_content_test(String data) {
+        Pattern pattern = Pattern.compile("lo TH] \\s*(.+)");
+        Matcher matcher = pattern.matcher(data);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "";
+    }
+
+    @Override
+    public String find_Inherited_account_number_test(String data) {
+        Pattern pattern = Pattern.compile("Tài khoản thụ hưởng \\s*(.+)");
+        Matcher matcher = pattern.matcher(data);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "";
+    }
+
+    @Override
+    public void deleteOldPaymentToken(LocalDateTime timeLimit) {
+        temporaryRepo.deleteByCreatedAtBefore(timeLimit);
+        System.err.println("Handle payment token...");
+    }
+
+    @Override
+    public int count() {
+        return (int) temporaryRepo.count();
+    }
+
+    @Override
+    public int countTemporariesByUserAccount(UserAccount userAccount) {
+        return temporaryRepo.countTemporariesByUserAccount(userAccount);
+    }
+
+    @Override
+    public TemporaryDto savePaymentToken(String token) {
+        UserAccount userAccount = userRepo.findByEmail(Security.getSessionUser());
+        Temporary temporary = new Temporary();
+        temporary.setPayment_token(token);
+        temporary.setUserAccount(userAccount);
+        Temporary temporary_new = temporaryRepo.save(temporary);
+        TemporaryDto temporaryDto = new TemporaryDto();
+        temporaryDto.setId(temporary_new.getId());
+        temporaryDto.setPayment_token(temporary_new.getPayment_token());
+        temporaryDto.setUserAccount(temporary_new.getUserAccount());
+
+        return temporaryDto;
+    }
+
+
+    @Override
+    public void deletePaymentTokenByUserId(String user_id) {
+        temporaryRepo.deletePaymentTokenByUserId(user_id);
+    }
+
+    @Override
+    public String findPaymentTokenByUserId(String user_id) {
+
+        String payment_Token = temporaryRepo.findPaymentTokenByUserId(user_id);
+        TemporaryDto temporaryDto = new TemporaryDto();
+        temporaryDto.setPayment_token(payment_Token);
+        return temporaryDto.getPayment_token();
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

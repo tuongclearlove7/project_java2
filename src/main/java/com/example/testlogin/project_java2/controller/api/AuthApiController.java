@@ -64,23 +64,10 @@ public class AuthApiController {
     }
 
     @GetMapping("/logout")
-    ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response, HttpSession session){
+    ResponseEntity<?> logout(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.clearContext();
-        session.invalidate();
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("JWT_TOKEN")) {
-                    cookie.setValue("");
-                    cookie.setMaxAge(0);
-                    cookie.setPath("/");
-                    response.addCookie(cookie);
-                    break;
-                }
-            }
-        }
         return new ResponseEntity<>(authentication, HttpStatus.OK);
     }
 

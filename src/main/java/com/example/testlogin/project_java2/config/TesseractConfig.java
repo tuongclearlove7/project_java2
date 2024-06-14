@@ -17,7 +17,7 @@ public class TesseractConfig {
     @Bean
     public Tesseract tesseract() {
         Tesseract tesseract = new Tesseract();
-        tesseract.setLanguage("eng");
+        tesseract.setLanguage("vie");
         tesseract.setDatapath("D:\\download\\tesseract-ocr\\tessdata");
         tesseract.setOcrEngineMode(OEM_TESSERACT_ONLY);
         tesseract.setPageSegMode(PSM_AUTO);

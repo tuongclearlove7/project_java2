@@ -13,16 +13,13 @@ const Auth = ({children}) => {
     const user = useSelector((state) => state.auth.login?.currentUser);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        console.log("User: ",user);
-    }, []);
-
     const fetchUser = async () => {
         try {
             if (user?.accessToken) {
                 await getUser(user.accessToken, dispatch);
             }
         } catch (error) {
+            navigate("/login");
             console.error("Error fetching user data: ", error);
         }
     };

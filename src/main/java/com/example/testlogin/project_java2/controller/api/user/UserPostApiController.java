@@ -6,10 +6,12 @@ import com.example.testlogin.project_java2.dto.UploadDto;
 import com.example.testlogin.project_java2.model.BankAccount;
 import com.example.testlogin.project_java2.model.Upload;
 import com.example.testlogin.project_java2.model.UserAccount;
+import com.example.testlogin.project_java2.model.object.PaymentToken;
 import com.example.testlogin.project_java2.security.Security;
 import com.example.testlogin.project_java2.security.middleware.JWTAuthenticationFilter;
 import com.example.testlogin.project_java2.service.*;
 import net.minidev.json.JSONObject;
+import net.sourceforge.tess4j.TesseractException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +19,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -73,35 +79,37 @@ public class UserPostApiController {
 
     @PostMapping("/user_payment")
     private ResponseEntity<JSONObject> payment(@RequestParam("file") MultipartFile file,
-                                               HttpSession session) {
+    @RequestParam("account_number_sent_to") String account_number_sent_to) throws TesseractException, IOException {
+
         JSONObject object = new JSONObject();
         Path tempFilePath = null;
 
         try{
             String tempDir = System.getProperty("java.io.tmpdir");
             String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+
             tempFilePath = Paths.get(tempDir, fileName);
             Files.copy(file.getInputStream(), tempFilePath, StandardCopyOption.REPLACE_EXISTING);
 
             String dataScan = ocrService.getImageString(tempFilePath.toFile());
-            String inherited_account_number = paymentService.find_Inherited_account_number(dataScan);
-            String content = paymentService.find_content(dataScan);
+            String inherited_account_number = paymentService.find_Inherited_account_number_test(dataScan);
+            String content = paymentService.find_content_test(dataScan);
 
             UserAccount user_payment = userService.findByEmail(Security.getSessionUser());
             BankAccount bankAccountUser = bankAccountService.findByUserAccount(user_payment);
             UploadDto uploadDto = null;
 
             if(!paymentService.check_inherited_account_number(inherited_account_number)
-            || !paymentService.check_content(content, session)){
+            || !paymentService.check_content(content)){
                 object.put("error","Số tài khoản thừa hưởng hoặc nội dung không chính xác vui lòng xác minh lại!");
                 object.put("payment_status",false);
-                return new ResponseEntity<>(object, HttpStatus.OK);
+                return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
             }
             if(bankAccountUser != null){
                 uploadDto = uploadService.create(file);
             }
-            PaymentDto paymentDto = paymentService.create(tempFilePath.toFile(), session, object,
-            uploadDto, bankAccountUser);
+            PaymentDto paymentDto = paymentService.create(tempFilePath.toFile(), object,
+            uploadDto, bankAccountUser, account_number_sent_to);
 
             if(paymentDto.isStatus_increase_amount()){
                 object.put("message","Payment successfully");
@@ -110,8 +118,7 @@ public class UserPostApiController {
             }
             object.put("message","Payment failed!!!");
             object.put("user_payment",paymentDto);
-
-            return new ResponseEntity<>(object, HttpStatus.OK);
+            return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
         }catch (Exception exception){
             object.put("error", exception.getMessage());
             return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -128,24 +135,7 @@ public class UserPostApiController {
     }
 
 
-    @PostMapping("/user_buy")
-    private ResponseEntity<JSONObject> buy(HttpSession session)
-            throws IOException {
 
-        JSONObject object = new JSONObject();
-        try{
-
-            String token = paymentService.generate_token();
-            object.put("message" , "Để xác thực hóa đơn thanh toán của bạn hãy nhập mã này vào nội dung thanh toán của bạn!");
-            object.put("token" ,token);
-            session.setAttribute("paymentToken", token);
-
-            return new ResponseEntity<>(object, HttpStatus.OK);
-        }catch (Exception exception){
-            object.put("error", exception.getMessage());
-            return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
 
 

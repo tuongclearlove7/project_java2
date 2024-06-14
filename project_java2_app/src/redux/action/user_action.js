@@ -24,7 +24,9 @@ const user_action = createSlice({
                 state.user.isFetching = false;
                 state.user.error = true;
             },
-
+            clearUser : (state, action) =>{
+                state.user.userLogin = null;
+            },
 
         }
     }
@@ -34,6 +36,7 @@ export const {
     getUserStart,
     getUserSuccess,
     getUserFailed,
+    clearUser,
 } = user_action.actions;
 
 export default user_action.reducer;

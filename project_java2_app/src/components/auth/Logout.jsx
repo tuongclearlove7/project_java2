@@ -5,6 +5,7 @@ import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {useDispatch, useSelector} from "react-redux";
 import {logout} from '../../redux/action/auth_action';
+import {clearUser} from "../../redux/action/user_action";
 
 const Logout = () => {
 
@@ -16,6 +17,7 @@ const Logout = () => {
 
         e.preventDefault();
         dispatch(logout());
+        dispatch(clearUser());
         navigate("/login");
         window.location.reload();
     }

@@ -1,6 +1,8 @@
-import {getApi} from "../../api/api";
+import {getApi, notify} from "../../api/api";
 import {getUserFailed, getUserStart, getUserSuccess} from "./user_action";
-import {getBankAccountUserStart, getBankAccountUserSuccess, getBankAccountUserFailed} from "./bank_account_action";
+import {getBankAccountUserStart, getBankAccountUserSuccess, getBankAccountUserFailed,
+getTokenGenStart, getTokenGenSuccess, getTokenGenFailed} from "./bank_account_action";
+import {fetchPaymentToken} from "../../components/payment/fetchData";
 
 
 export const getUser = async (token, dispatch) => {
@@ -26,5 +28,22 @@ export const getBankAccount = async (token, dispatch) => {
     }
 };
 
+
+export const getPaymentToken = async (token, dispatch) => {
+    dispatch(getTokenGenStart());
+    try {
+        const data = await getApi("/api/user/generate_payment_token", token);
+        await fetchPaymentToken(token, dispatch);
+        await dispatch(getTokenGenSuccess(data));
+    } catch (error) {
+        console.log(error.response);
+        notify(error.response?.data?.message,2000);
+        dispatch(getTokenGenFailed({
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+        }));
+    }
+};
 
 

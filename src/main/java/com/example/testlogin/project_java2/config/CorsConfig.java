@@ -4,6 +4,8 @@ package com.example.testlogin.project_java2.config;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
@@ -14,19 +16,24 @@ import java.util.Arrays;
 @Configuration
 public class CorsConfig {
 
-    private static final Long MAX_AGE = 3600L;
-    private static final int CORS_FILTER_ORDER = -102;
+    private static final long MAX_AGE_SECS = 3600;
 
     @Bean
-    public FilterRegistrationBean corsFilter() {
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("http://localhost:3000");//react url
+        config.addAllowedOriginPattern("http://localhost:3000"); // frontend URL
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
         config.setAllowedHeaders(Arrays.asList(
                 HttpHeaders.AUTHORIZATION,
                 HttpHeaders.CONTENT_TYPE,
-                HttpHeaders.ACCEPT));
+                HttpHeaders.ACCEPT,
+                HttpHeaders.ORIGIN,
+                HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
+                HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS));
         config.setAllowedMethods(Arrays.asList(
                 HttpMethod.GET.name(),
                 HttpMethod.POST.name(),
@@ -34,12 +41,13 @@ public class CorsConfig {
                 HttpMethod.PATCH.name(),
                 HttpMethod.DELETE.name(),
                 HttpMethod.OPTIONS.name()));
-        config.setMaxAge(MAX_AGE);
+        config.setMaxAge(MAX_AGE_SECS);
         source.registerCorsConfiguration("/**", config);
-        FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
-        bean.setOrder(CORS_FILTER_ORDER);
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }
+
 
 
 }

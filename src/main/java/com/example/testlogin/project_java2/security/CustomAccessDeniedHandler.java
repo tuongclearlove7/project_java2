@@ -22,7 +22,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("error", "Unauthorized");
         objectMapper.writeValue(response.getWriter(), responseBody);
-        System.out.println("Status: "+response.getStatus());
+        System.err.println("Status: "+response.getStatus());
 
     }
 }

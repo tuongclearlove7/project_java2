@@ -13,11 +13,14 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class OcrWorker  implements OcrService {
 
     private final Tesseract tesseract;
+    private static final Logger LOGGER = Logger.getLogger(OcrWorker.class.getName());
 
     @Autowired
     public OcrWorker(Tesseract tesseract) {
@@ -34,14 +37,11 @@ public class OcrWorker  implements OcrService {
                 throw new IOException("Failed to read image from file: " + file.getAbsolutePath());
             }
             BufferedImage brightenedImage = preprocessImage(image);
-            // Lưu ảnh đã tiền xử lý để kiểm tra
-            File preprocessedFile = new File(System.getProperty("java.io.tmpdir") + "/preprocessed_" + file.getName());
-            ImageIO.write(brightenedImage, "png", preprocessedFile);
 
-            return tesseract.doOCR(preprocessedFile);
+            return tesseract.doOCR(brightenedImage);
         } catch (IOException e) {
-            e.printStackTrace();
-            return "Error while processing file";
+            LOGGER.log(Level.SEVERE, "Error processing file", e);
+            return "Error while processing file " + e.getMessage();
         }
     }
 

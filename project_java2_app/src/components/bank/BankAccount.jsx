@@ -5,6 +5,9 @@ import {getBankAccount, getUser} from "../../redux/action/action";
 import {Link, NavLink, Route} from "react-router-dom";
 import list_nav from '../element/routes';
 import Auth from "../element/Auth";
+import PaymentTable from "../payment/PaymentTable";
+import {getBankAccountUserSuccess} from "../../redux/action/bank_account_action";
+import {fetchBankAccount} from "../payment/fetchData";
 
 const BankAccount = () => {
 
@@ -14,23 +17,6 @@ const BankAccount = () => {
     const bank_account = useSelector((state) =>
     state.bank_account.bank_acc?.data);
 
-    const fetchBankAccount = async () => {
-        try {
-            if (user?.accessToken) {
-                await getBankAccount(user.accessToken, dispatch);
-            }
-        } catch (error) {
-            console.error("Error fetching user data: ", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchBankAccount().then();
-    }, []);
-
-    useEffect(() => {
-        console.log("bank account: ",bank_account);
-    }, []);
 
     return (
         <div>
@@ -72,7 +58,7 @@ const BankAccount = () => {
                                         <div>
                                             <i className={`fa fa-bank mr-1 text-default ${styles.mr1}`}/>
                                             <div className="d-inline-block font-weight-medium text-uppercase">
-                                                {bank_account.code || null}
+                                                {bank_account?.code ? bank_account?.code : 'None'}
                                             </div>
                                         </div>
                                         <span className="badge badge-secondary"></span>
@@ -85,7 +71,7 @@ const BankAccount = () => {
                                         <div>
                                             <i className={`fa fa-money mr-1 text-success ${styles.mr1}`}/>
                                             <div className="d-inline-block font-weight-medium text-uppercase">
-                                                {bank_account.amount || null + " VNĐ" }
+                                                {bank_account?.amount ? bank_account?.amount : 0 + " VNĐ" }
                                             </div>
                                         </div>
                                         <span className="badge badge-secondary">3</span>
@@ -97,9 +83,9 @@ const BankAccount = () => {
                                       target="__blank">
                                     <div className="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <i className={bank_account.status === 'isACTIVE' ? `fa fa-circle mr-1 text-success ${styles.mr1}` : `fa fa-circle mr-1 text-danger ${styles.mr1}`}/>
+                                            <i className={bank_account?.status === 'isACTIVE' ? `fa fa-circle mr-1 text-success ${styles.mr1}` : `fa fa-circle mr-1 text-danger ${styles.mr1}`}/>
                                             <div className="d-inline-block font-weight-medium">
-                                                {bank_account.status || null}
+                                                {bank_account?.status ? bank_account?.status : 'NOT ACTIVE'}
                                             </div>
                                         </div>
                                         <span className="badge badge-secondary">3</span>
@@ -123,40 +109,11 @@ const BankAccount = () => {
                         </nav>
                     </div>
                 </div>
+
                 {/* Orders Table */}
-                <div className="col-lg-8 pb-5">
-                    <div className="table-responsive">
-                        <table className="table table-hover mb-0">
-                            <thead>
-                            <tr>
-                                <th>Account ID</th>
-                                    <th>Code</th>
-                                    <th>Status</th>
-                                    <th>Amount</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>
-                                        <a
-                                            className="navi-link"
-                                            href="#order-details"
-                                            data-toggle="modal"
-                                        >
-                                            {bank_account.id || null}
-                                        </a>
-                                    </td>
-                                    <td>{bank_account.code || null}</td>
-                                    <td>
-                                        <span className={bank_account.status === 'isACTIVE' ? "badge text-bg-success" : "badge text-bg-danger"} >
-                                            {bank_account.status || null}
-                                        </span>
-                                    </td>
-                                    <td>{bank_account.amount || null + ' VNĐ' }</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div className="col-lg-8 pb-5">
+
+                        <PaymentTable/>
                     </div>
                 </div>
             </div>

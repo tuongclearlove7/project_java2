@@ -18,6 +18,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -74,7 +75,6 @@ public class SecurityConfig {
 
         .antMatchers(HttpMethod.DELETE , "/api/user/**")
         .hasAnyRole("USER")
-
 
 
         .antMatchers(HttpMethod.GET , "/api/admin/**", "/swagger-ui/**", "/v3/**")

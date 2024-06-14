@@ -2,8 +2,11 @@ import axios from "axios"
 import Cookies from "js-cookie";
 import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {loginStart, loginSuccess, loginFailed} from '../redux/action/auth_action';
+import {loginStart, loginSuccess, loginFailed}
+from '../redux/action/auth_action';
 import {useSelector} from "react-redux";
+import {getPaymentFailed, getPaymentStart, getPaymentSuccess}
+from "../redux/action/bank_account_action";
 
 export const api = axios.create({
     baseURL: process.env.REACT_APP_API_LOCALHOST
@@ -36,7 +39,8 @@ export async function loginUser(data, dispatch, navigate){
             window.location.reload();
         }
     }catch (error) {
-        dispatch(loginFailed());
+        notify(error.message, 2000);
+        dispatch(loginFailed(error));
     }
 
 }
@@ -68,6 +72,31 @@ export async function getApi(url, token) {
 
         return res.data;
     }catch (error) {
+        throw error;
+    }
+}
+
+
+export async function paymentPost(url, token, data, dispatch) {
+    dispatch(getPaymentStart());
+    try{
+        const res = await api.post(url,data, {
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type" : "multipart/form-data",
+            }
+        });
+
+        console.log(res.data);
+        dispatch(getPaymentSuccess(res.data));
+        return res.data;
+    }catch (error) {
+        dispatch(getPaymentFailed({
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+        }));
         throw error;
     }
 }
