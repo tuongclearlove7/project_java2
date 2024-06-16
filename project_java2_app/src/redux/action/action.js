@@ -2,7 +2,7 @@ import {getApi, notify} from "../../api/api";
 import {getUserFailed, getUserStart, getUserSuccess} from "./user_action";
 import {getBankAccountUserStart, getBankAccountUserSuccess, getBankAccountUserFailed,
 getTokenGenStart, getTokenGenSuccess, getTokenGenFailed} from "./bank_account_action";
-import {fetchPaymentToken} from "../../components/payment/fetchData";
+import {fetchPaymentToken} from "../../components/payment/fetch";
 
 
 export const getUser = async (token, dispatch) => {

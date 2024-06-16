@@ -22,7 +22,7 @@ import java.util.Map;
 @Component
 public class AccountFilter extends OncePerRequestFilter {
 
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public AccountFilter(UserService userService) {

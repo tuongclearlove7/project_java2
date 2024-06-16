@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import styles from "./Payment.module.css";
+import loading from "../../assets/img/loading_dark.gif";
 import '../../assets/css/payment.css';
 import {useDispatch, useSelector} from "react-redux";
 import GeneratePaymentToken from "./GeneratePaymentToken";
@@ -14,6 +15,9 @@ const Payment = () => {
     const [showToken,setShowToken] = useState(false);
     const [input, setInput] = useState("");
     const [file, setFile] = useState();
+    const [show, setShow] = useState(false);
+    const payment_data = useSelector((state) =>
+    state.bank_account.payment?.data);
 
     const handleInputChange = (e) =>{
         setInput(e.target.value);
@@ -34,28 +38,35 @@ const Payment = () => {
         }
         if (!file) {
             notify("LỖI: File không tồn tại!!!",2000)
-            console.log("LỖI: File không tồn tại!!!");
+            console.warn("LỖI: File không tồn tại!!!");
             return;
         }
         try{
+            setShow(true);
+            await new Promise(resolve => setTimeout(resolve, 2500));
             await paymentPost("/api/user/user_payment", user?.accessToken,{
                 account_number_sent_to : user_bank_code,
                 file: file,
-            }, dispatch).then(res => notify(res.message, 2000)
+            }, dispatch).then(
+                async res => {
+                    setShow(false);
+                    notify(res.message, 2000);
+                }
             ).catch(err => notify(err, 2000));
-
         }catch (error) {
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            setShow(false);
             notify(error.response?.data?.error, 2000);
         }
+        setShow(false);
     }
 
     const handleShowPaymentToken = async ()=>{
 
         setShowToken(true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        HandlePaymentToken().then(() => {
-            setShowToken(false);
-        });
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        HandlePaymentToken().then();
+        setShowToken(false);
     }
     const HandlePaymentToken = async () => {
         try {
@@ -145,6 +156,12 @@ const Payment = () => {
                                     {showToken && (
                                         <div className="mb-5">
                                             <h2>Generate payment token...</h2>
+                                            <div>
+                                                <img src={loading ? loading : ''}
+                                                     alt={loading ? loading : ''}
+                                                     className={styles.loading}
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                     <GeneratePaymentToken/>
@@ -154,7 +171,7 @@ const Payment = () => {
                         </div>
                     </div>
                     {/* end row*/}
-                    <PaymentLoading/>
+                    <PaymentLoading display={show}/>
                 </div>
                 {/* end row */}
             </div>

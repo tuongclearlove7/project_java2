@@ -3,6 +3,7 @@ package com.example.testlogin.project_java2.dto;
 
 import com.example.testlogin.project_java2.constant.EnumConstant;
 import com.example.testlogin.project_java2.model.Payment;
+import com.example.testlogin.project_java2.model.Upload;
 import com.example.testlogin.project_java2.model.UserAccount;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
@@ -27,5 +28,6 @@ public class BankAccountDto {
     @NotEmpty(message = "status should not be empty!")
     private EnumConstant status;
     private UserAccount userAccount;
+    private List<Upload> uploads = new ArrayList<>();
     private List<Payment> payments = new ArrayList<>();
 }

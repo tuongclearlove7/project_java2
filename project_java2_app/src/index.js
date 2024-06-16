@@ -12,6 +12,7 @@ import Login from "./components/auth/Login";
 import {PersistGate} from "redux-persist/integration/react";
 import Auth from "./components/element/Auth";
 import View from "./components/Home/View";
+import Register from "./components/auth/Register";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -22,7 +23,7 @@ root.render(
                   <Routes>
                       <Route path="/" element={<App/>}>
                           <Route index element={<Auth><Home /></Auth>}/>
-                          {list_nav.routes.map((route, index) => {
+                          {list_nav?.routes.map((route, index) => {
                               if (route.isProtected) {
                                   return (
                                       <Route
@@ -33,7 +34,16 @@ root.render(
                                   );
                               }
                           })}
+                          {list_nav?.guest_routes.map((route, index) =>
+                              <Route
+                                  key={index}
+                                  path={route.path}
+                                  element={route.element}
+                              />
+                          )
+                          }
                           <Route path="/login" element={<Login/>}/>
+                          <Route path="/register" element={<Register/>}/>
                       </Route>
                   </Routes>
               </BrowserRouter>

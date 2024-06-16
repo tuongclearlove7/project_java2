@@ -89,7 +89,7 @@ public class PaymentWorker implements PaymentService, TemporaryService {
             newPaymentDto.setStatus_check_content(false);
             newPaymentDto.setStatus_increase_amount(false);
             object.put("payment_status",false);
-            object.put("error","Số tài khoản của bạn không hợp lệ!");
+            object.put("error","Your bank code is invalid!");
 
             return newPaymentDto;
         }
@@ -104,7 +104,7 @@ public class PaymentWorker implements PaymentService, TemporaryService {
             newPaymentDto.setStatus_check_content(false);
             newPaymentDto.setStatus_increase_amount(false);
             object.put("payment_status",false);
-            object.put("error","Bạn chưa mở ví tiền vui lòng mở ví tiền để nạp tiền!");
+            object.put("error","Open app to payment!");
 
             return newPaymentDto;
         }
@@ -132,6 +132,7 @@ public class PaymentWorker implements PaymentService, TemporaryService {
             newPaymentDto.setStart_time(newPaymentByUser.getStart_time());
             newPaymentDto.setDeposit_amount(newPaymentByUser.getDeposit_amount());
             newPaymentDto.setPayment_content(newPaymentByUser.getPayment_content());
+            uploadNew.ifPresent(newPaymentDto::setUpload);
             Optional<BankAccount> bankAccountUpdated = bankAccountRepo.findById(bankAccountUser.getId());
             bankAccountUpdated.ifPresent(newPaymentDto::setBankAccount);
             deletePaymentTokenByUserId(userRepo.findByEmail(Security.getSessionUser()).getId());
@@ -151,7 +152,7 @@ public class PaymentWorker implements PaymentService, TemporaryService {
         newPaymentDto.setStatus_check_inherited_account_number(false);
         newPaymentDto.setStatus_check_content(false);
         newPaymentDto.setStatus_increase_amount(false);
-        object.put("error","Lỗi số tiền chưa được cộng vào tài khoản của bạn chúng tôi sẽ xem xét!");
+        object.put("error","error payment!");
         object.put("payment_status",false);
 
         return newPaymentDto;

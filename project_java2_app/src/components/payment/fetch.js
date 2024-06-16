@@ -1,16 +1,31 @@
-import {getBankAccount, getUser} from "../../redux/action/action";
+import {getBankAccount} from "../../redux/action/action";
 import {
     getPaymentTokenFailed,
     getPaymentTokenStart,
     getPaymentTokenSuccess
 } from "../../redux/action/bank_account_action";
-import {getApi} from "../../api/api";
-export const fetchBankAccount = async (user, dispatch) => {
+import {getApi, notify} from "../../api/api";
+
+export const activeBankAccount = async (token, dispatch) =>{
     try {
-        if (user?.accessToken) {
-            await getBankAccount(user.accessToken, dispatch);
+        if (token) {
+            await getApi("/api/user/active_bank_account",token)
+            .then(async ()=>
+                await fetchBankAccount(token, dispatch))
+            .catch(error=>console.error(error));
         }
     } catch (error) {
+        console.error("Error fetching data: ", error);
+    }
+}
+
+export const fetchBankAccount = async (token, dispatch) => {
+    try {
+        if (token) {
+            await getBankAccount(token, dispatch);
+        }
+    } catch (error) {
+        notify("Error fetching user data: ", error, 2000);
         console.error("Error fetching user data: ", error);
     }
 };
@@ -19,7 +34,7 @@ export const  fetchPaymentToken = async (token, dispatch)=>{
     dispatch(getPaymentTokenStart());
     try{
         if(token){
-            getApi("/api/user/get_payment_token",token).then(
+            await getApi("/api/user/get_payment_token",token).then(
                 res=>{
                     dispatch(getPaymentTokenSuccess(res));
                 }

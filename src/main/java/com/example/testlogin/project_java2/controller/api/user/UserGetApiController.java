@@ -69,6 +69,28 @@ public class UserGetApiController {
         }
     }
 
+    @GetMapping("/active_bank_account")
+    private ResponseEntity<JSONObject> active_bank_account(){
+
+        JSONObject object = new JSONObject();
+        try{
+            UserAccount user = userService.findByEmail(Security.getSessionUser());
+            BankAccountDto bankAccountDto =  bankAccountService.active_bank_account(user);
+            if(bankAccountDto != null){
+                object.put("message","Active bank account successfully");
+                object.put("status",true);
+                object.put("bankAccount",bankAccountDto);
+                return new ResponseEntity<>(object, HttpStatus.OK);
+            }
+            object.put("status",false);
+            object.put("message","Active bank account failed!!!");
+            return new ResponseEntity<>(object, HttpStatus.OK);
+        }catch (Exception exception){
+            object.put("error", exception.getMessage());
+            return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/bank_account")
     private ResponseEntity<?> bank_account(
             @AuthenticationPrincipal UserDetails userDetails){
@@ -109,11 +131,11 @@ public class UserGetApiController {
             String token = paymentService.generate_token();
             if(temporaryService.countTemporariesByUserAccount(
             userService.findByEmail(Security.getSessionUser())) >= 1){
-                object.put("message" , "Bạn đã tạo payment token nội dung thanh toán!");
+                object.put("message" , "You did create a payment token before!");
                 return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
             }
             TemporaryDto temporaryDto = temporaryService.savePaymentToken(token);
-            object.put("message" , "Để xác thực hóa đơn thanh toán của bạn hãy nhập mã này vào nội dung thanh toán của bạn!");
+            object.put("message" , "To verify the payment invoice, You must enter the token into your payment content!");
             object.put("data" ,temporaryDto);
 
             return ResponseEntity.ok(object);

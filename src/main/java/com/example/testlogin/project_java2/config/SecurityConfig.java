@@ -68,13 +68,13 @@ public class SecurityConfig {
         .hasAnyRole("USER", "ADMIN")
 
         .antMatchers(HttpMethod.POST , "/api/user/**")
-        .hasAnyRole("USER")
+        .hasAnyRole("USER", "ADMIN")
 
         .antMatchers(HttpMethod.PUT , "/api/user/**")
-        .hasAnyRole("USER")
+        .hasAnyRole("USER", "ADMIN")
 
         .antMatchers(HttpMethod.DELETE , "/api/user/**")
-        .hasAnyRole("USER")
+        .hasAnyRole("USER", "ADMIN")
 
 
         .antMatchers(HttpMethod.GET , "/api/admin/**", "/swagger-ui/**", "/v3/**")

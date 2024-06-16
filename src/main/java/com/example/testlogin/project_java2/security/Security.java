@@ -4,6 +4,7 @@ package com.example.testlogin.project_java2.security;
 import com.example.testlogin.project_java2.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -22,12 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
 @RequiredArgsConstructor
 public class Security {
-
-
-    public static final  long JWT_EXPIRATION = 300000;
-    public static final  String JWT_SECRET = "secret";
-    public static final int max_record = 5;
-    public static final String keyEncrypt = "0123456789abcdef";
 
     private CustomUserDetailsService userDetailsService;
 

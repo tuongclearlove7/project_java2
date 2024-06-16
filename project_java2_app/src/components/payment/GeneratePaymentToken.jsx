@@ -6,7 +6,7 @@ import {
     getPaymentTokenSuccess,
     getTokenGenSuccess
 } from "../../redux/action/bank_account_action";
-import {fetchBankAccount, fetchPaymentToken} from "./fetchData";
+import {fetchPaymentToken} from "./fetch";
 import {getApi} from "../../api/api";
 import {get} from "axios";
 
@@ -48,7 +48,6 @@ const GeneratePaymentToken = () => {
                     </div>
                 </div>
                 <div className="feed-item-list">
-
                     <div>
                         <h5 className="font-size-14 mb-3">Payment content :</h5>
                         <b>{`${payment_content_token?.message !== undefined ?
@@ -56,14 +55,13 @@ const GeneratePaymentToken = () => {
                                 payment_content_token?.data?.message ?
                                 payment_content_token?.data?.message  : 
                                 get_payment_token?.payment_token ? 
-                                'Dùng token này để làm nội dung thanh toán'
-                                : 'Bấm nút đề tạo token xác thực thanh toán!'
+                                'Use this token to payment'
+                                : 'Click button to create payment token!'
                             }`}</b>
                         <div className="col-lg-12 col-sm-6 mt-4">
                             <div data-bs-toggle="collapse">
                                 <label className="card-radio-label">
-                                    <input
-                                        type="radio"
+                                    <input type="radio"
                                         name="pay-method"
                                         id="pay-methodoption1"
                                         className="card-radio-input"

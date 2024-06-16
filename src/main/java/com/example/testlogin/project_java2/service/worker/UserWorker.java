@@ -4,25 +4,123 @@ import com.example.testlogin.project_java2.dto.UserDto;
 import com.example.testlogin.project_java2.mapper.UserMapper;
 import com.example.testlogin.project_java2.model.Role;
 import com.example.testlogin.project_java2.model.UserAccount;
+import com.example.testlogin.project_java2.model.object.VerifyAccount;
 import com.example.testlogin.project_java2.repo.RoleRepo;
 import com.example.testlogin.project_java2.repo.UserRepo;
+import com.example.testlogin.project_java2.repo.VerifyAccountRepo;
 import com.example.testlogin.project_java2.security.Security;
+import com.example.testlogin.project_java2.service.SendMailService;
 import com.example.testlogin.project_java2.service.UserService;
-import lombok.AllArgsConstructor;
+import java.util.concurrent.ThreadLocalRandom;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.crypto.Cipher;
 
 @Service
-@AllArgsConstructor
 public class UserWorker implements UserService{
+
+    @Value("${app.KEY_ENCRYPT}")
+    public String KEY_ENCRYPT;
 
     private final UserRepo userRepository;
     private final RoleRepo roleRepo;
-    PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final SendMailService sendMailService;
+    private final VerifyAccountRepo  verifyAccountRepo;
 
+    @Autowired
+    public UserWorker(UserRepo userRepository, RoleRepo roleRepo, PasswordEncoder passwordEncoder, SendMailService sendMailService, VerifyAccountRepo verifyAccountRepo) {
+        this.userRepository = userRepository;
+        this.roleRepo = roleRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.sendMailService = sendMailService;
+        this.verifyAccountRepo = verifyAccountRepo;
+    }
+
+    public String encryptPassword(String password, String key) {
+        try {
+            byte[] iv = new byte[16];
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
+            byte[] encryptedBytes = cipher.doFinal(password.getBytes());
+
+            return Base64.getEncoder().encodeToString(encryptedBytes) + generateNumber();
+        } catch (Exception exception) {
+
+            System.out.println("ERROR: "+exception.getMessage());
+            throw new RuntimeException(exception);
+        }
+    }
+
+    public long generateNumber() {
+        return ThreadLocalRandom.current().nextLong(10000L, 100000L);
+    }
+
+
+    @Override
+    public int countByEmail(String email) {
+        return userRepository.countByEmail(email);
+    }
+
+    @Override
+    public void sendMailToVerifyUser(UserDto userDto){
+        if(userDto != null){
+            String token = null;
+            try{
+                verifyAccountRepo.save(new VerifyAccount(
+                    userDto.getEmail(),
+                    token = encryptPassword(userDto.getPassword(),
+                    this.KEY_ENCRYPT)
+                ));
+                sendMailService.setMailSender(userDto.getEmail(),
+        "VERIFY YOUR ACCOUNT", "Verify token: " +
+                token);
+            }catch (Exception exception){
+                System.err.println("Lỗi "+exception.getMessage());
+            }
+        }
+    }
+
+    public boolean checkVerifyToken(String email, String token) {
+//            return true;
+        return verifyAccountRepo.countVerifyAccountByEmailAndVerifyToken(email, token) > 0;
+    }
+
+    @Override
+    public boolean verifyAccount(String email, String password,String token){
+        if(email != null || password != null || token != null)
+            if(checkVerifyToken(email, token))
+                return createUser(email, password);
+        return false;
+    }
+
+    private boolean createUser(String email, String password){
+        try{
+            UserAccount user = new UserAccount();
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setType(EnumConstant.NORMAL);
+            user.setActive(EnumConstant.isACTIVE);
+            Role role = roleRepo.findByName("USER");
+            user.setRoles(Collections.singletonList(role));
+            userRepository.save(user);
+            verifyAccountRepo.deleteVerifyAccountEmail(email);
+            return true;
+        }catch (Exception exception){
+            System.err.println(exception.getMessage());
+            return false;
+        }
+    }
 
     @Override
     public UserDto createUser(UserDto userDto) {
@@ -45,6 +143,7 @@ public class UserWorker implements UserService{
 
         return userResponse;
     }
+
 
     @Override
     public UserDto update_name_user(String name) {

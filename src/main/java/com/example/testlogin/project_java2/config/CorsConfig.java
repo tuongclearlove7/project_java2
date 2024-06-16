@@ -11,10 +11,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.util.Arrays;
+
 @Configuration
 public class CorsConfig {
+
+    @Value("${app.frontend_url}")
+    private  String FRONT_END_URL;
 
     private static final long MAX_AGE_SECS = 3600;
 
@@ -24,7 +28,7 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("http://localhost:3000"); // frontend URL
+        config.addAllowedOriginPattern(this.FRONT_END_URL); // frontend URL
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowedHeaders(Arrays.asList(

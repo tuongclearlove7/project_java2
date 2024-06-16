@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface UserService {
 
-
+    int countByEmail(String email);
     UserDto createUser(UserDto userDto);
 
     UserDto update_name_user(String name);
@@ -17,5 +17,9 @@ public interface UserService {
     UserAccount findByEmail(String email);
 
     boolean checkActiveUser();
+
+    void sendMailToVerifyUser(UserDto userDto);
+
+    boolean verifyAccount(String email, String password,String token);
 
 }

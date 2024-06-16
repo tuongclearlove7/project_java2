@@ -4,6 +4,7 @@ package com.example.testlogin.project_java2.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,16 +14,20 @@ import java.util.Date;
 @Component
 public class JWTGeneratorToken {
 
+    @Value("${app.JWT_EXPIRATION}")
+    public long JWT_EXPIRATION;
+    @Value("${app.JWT_SECRET}")
+    public String JWT_SECRET;
 
     public String generateToken(Authentication authentication){
 
         String email = authentication.getName();
         Date currentDate = new Date();
-        Date expireDate = new Date(currentDate.getTime() + Security.JWT_EXPIRATION);
+        Date expireDate = new Date(currentDate.getTime() + this.JWT_EXPIRATION);
 
         return Jwts.builder().setSubject(email).setIssuedAt(new Date())
                 .setExpiration(expireDate)
-                .signWith(SignatureAlgorithm.HS512, Security.JWT_SECRET)
+                .signWith(SignatureAlgorithm.HS512, this.JWT_SECRET)
                 .compact();
     }
 
@@ -35,14 +40,14 @@ public class JWTGeneratorToken {
                 .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS512, Security.JWT_SECRET)
+                .signWith(SignatureAlgorithm.HS512, this.JWT_SECRET)
                 .compact();
     }
 
 
     public String getEmailFromJWT(String token){
 
-        Claims claims = Jwts.parser().setSigningKey(Security.JWT_SECRET)
+        Claims claims = Jwts.parser().setSigningKey(this.JWT_SECRET)
                 .parseClaimsJws(token).getBody();
 
         return claims.getSubject();
@@ -51,7 +56,7 @@ public class JWTGeneratorToken {
     public boolean validateToken(String token) {
         try {
 
-            Jwts.parser().setSigningKey(Security.JWT_SECRET).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(this.JWT_SECRET).parseClaimsJws(token);
 
             return true;
         } catch (Exception ex) {

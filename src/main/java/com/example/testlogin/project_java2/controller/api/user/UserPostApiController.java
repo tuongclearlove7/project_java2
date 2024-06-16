@@ -54,27 +54,7 @@ public class UserPostApiController {
         this.ocrService = ocrService;
     }
 
-    @PostMapping("/active_bank_account")
-    private ResponseEntity<JSONObject> create_bank_account(){
 
-        JSONObject object = new JSONObject();
-        try{
-            UserAccount user = userService.findByEmail(Security.getSessionUser());
-            BankAccountDto bankAccountDto =  bankAccountService.active_bank_account(user);
-            if(bankAccountDto != null){
-                object.put("message","Active bank account successfully");
-                object.put("status",true);
-                object.put("bankAccount",bankAccountDto);
-                return new ResponseEntity<>(object, HttpStatus.OK);
-            }
-            object.put("status",false);
-            object.put("message","Active bank account failed!!!");
-            return new ResponseEntity<>(object, HttpStatus.OK);
-        }catch (Exception exception){
-            object.put("error", exception.getMessage());
-            return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
 
     @PostMapping("/user_payment")
@@ -101,7 +81,7 @@ public class UserPostApiController {
 
             if(!paymentService.check_inherited_account_number(inherited_account_number)
             || !paymentService.check_content(content)){
-                object.put("error","Số tài khoản thừa hưởng hoặc nội dung không chính xác vui lòng xác minh lại!");
+                object.put("error","Your bank code invalid or payment content is invalid!");
                 object.put("payment_status",false);
                 return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
             }

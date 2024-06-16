@@ -39,6 +39,7 @@ const Login = () => {
                                     <div className="col-12">
                                         <div className="text-center mb-5">
                                             <a href="#!">
+                                                <h1>LOGIN</h1>
                                             </a>
                                         </div>
                                     </div>

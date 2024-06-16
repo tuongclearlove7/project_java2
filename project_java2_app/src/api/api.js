@@ -2,8 +2,8 @@ import axios from "axios"
 import Cookies from "js-cookie";
 import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {loginStart, loginSuccess, loginFailed}
-from '../redux/action/auth_action';
+import {loginStart, loginSuccess, loginFailed, registerStart, registerSuccess, registerFailed}
+    from '../redux/action/auth_action';
 import {useSelector} from "react-redux";
 import {getPaymentFailed, getPaymentStart, getPaymentSuccess}
 from "../redux/action/bank_account_action";
@@ -45,6 +45,39 @@ export async function loginUser(data, dispatch, navigate){
 
 }
 
+export const createAccount = async (data, dispatch) => {
+    dispatch(registerStart());
+    try {
+        const res = await api.post("/api/v1/create/user", data);
+        if(res.status >= 200 && res.status < 300){
+            dispatch(registerSuccess(res.data));
+        }
+    }catch (error) {
+        console.log(error.message);
+        dispatch(registerFailed({
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+        }));
+        notify(error.message, 2000);
+    }
+}
+
+export const verifyAccount = async (data) => {
+    try {
+        const res = await api.post("/api/v1/verify/user", data,{
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        });
+        if(res.status >= 200 && res.status < 300){
+            console.log("signup sucessfully ",res.data);
+        }
+    }catch (error) {
+        notify(error.message, 2000);
+    }
+}
+
 export async function logoutUser(token) {
     try{
         const res = await api.get(`/api/v1/logout`);
@@ -76,7 +109,6 @@ export async function getApi(url, token) {
     }
 }
 
-
 export async function paymentPost(url, token, data, dispatch) {
     dispatch(getPaymentStart());
     try{
@@ -87,11 +119,11 @@ export async function paymentPost(url, token, data, dispatch) {
                 "Content-Type" : "multipart/form-data",
             }
         });
-
         console.log(res.data);
         dispatch(getPaymentSuccess(res.data));
         return res.data;
     }catch (error) {
+        notify(error.response?.data?.error, 2000);
         dispatch(getPaymentFailed({
             status: error.response?.status,
             statusText: error.response?.statusText,

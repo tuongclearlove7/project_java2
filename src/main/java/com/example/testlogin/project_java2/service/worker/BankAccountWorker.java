@@ -107,6 +107,7 @@ public class BankAccountWorker implements BankAccountService {
         bankAccountDto.setCode(bankAccount.getCode());
         bankAccountDto.setAmount(bankAccount.getAmount());
         bankAccountDto.setStatus(bankAccount.getStatus());
+        bankAccountDto.setUploads(bankAccount.getUserAccount().getUploads());
         bankAccountDto.setPayments(bankAccount.getPayments());
 
         return bankAccountDto;

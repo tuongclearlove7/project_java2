@@ -32,15 +32,50 @@ public class PostApiController {
 
         if (res.hasErrors()) {
             JSONObject errorObject = new JSONObject();
-            errorObject.put("status", "error");
-            errorObject.put("errors", res.getAllErrors());
+            errorObject.put("message", "error");
+            errorObject.put("error", res.getAllErrors());
             return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
         }
-        UserDto userNew =  userService.createUser(userDto);
-
+        if(userService.countByEmail(userDto.getEmail()) >= 1){
+            JSONObject errorObject = new JSONObject();
+            errorObject.put("message", "This account already exists!");
+            errorObject.put("error", res.getAllErrors());
+            return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+        }
         JSONObject object = new JSONObject();
-        object.put("user", userNew);
+        try{
+            userService.sendMailToVerifyUser(userDto);
+            object.put("message", "Next step enter your token to do the verify account");
+            object.put("new_user", userDto);
 
-        return new ResponseEntity<>(object, HttpStatus.OK);
+            return new ResponseEntity<>(object, HttpStatus.OK);
+        }catch (Exception error){
+            object.put("error", error);
+            return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
+
+    @PostMapping("/verify/user")
+    private ResponseEntity<?> verify_account(@RequestParam("email") String email,
+                                             @RequestParam("password") String password,
+                                             @RequestParam("verify_token") String verify_token){
+        JSONObject object = new JSONObject();
+        try{
+            if(email != null || password != null || verify_token != null){
+                if(userService.verifyAccount(email, password, verify_token)){
+                    object.put("message", "Verify successfully");
+                    return new ResponseEntity<>(object, HttpStatus.OK);
+                }
+            }
+            object.put("message", "Verify failed");
+            return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
+        }catch (Exception error){
+            object.put("error", error);
+            return new ResponseEntity<>(object, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+
 }

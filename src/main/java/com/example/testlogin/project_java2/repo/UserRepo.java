@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserRepo  extends JpaRepository<UserAccount, String> {
 
     UserAccount findByEmail(String email);
+    int countByEmail(String email);
 
 }

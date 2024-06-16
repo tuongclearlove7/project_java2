@@ -52,11 +52,13 @@ const Header = () => {
                                     </span>
                                 );
                             })}
-                            <li className="nav-item">
-                                <NavLink className="nav-link" aria-current="page" to={"/login"}>
-                                    Login
-                                </NavLink>
-                            </li>
+                            {list_nav?.guest_routes.map((route, index)=>
+                                <li key={index} className="nav-item">
+                                    <NavLink className="nav-link" aria-current="page" to={route?.path}>
+                                        {route?.name}
+                                    </NavLink>
+                                </li>
+                            )}
                         </ul>
                         <form className="d-flex" role="search">
                             <input

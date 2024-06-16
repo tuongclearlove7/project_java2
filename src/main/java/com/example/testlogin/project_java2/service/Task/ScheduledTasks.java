@@ -1,6 +1,7 @@
 package com.example.testlogin.project_java2.service.Task;
 
 import com.example.testlogin.project_java2.model.UserAccount;
+import com.example.testlogin.project_java2.repo.VerifyAccountRepo;
 import com.example.testlogin.project_java2.security.Security;
 import com.example.testlogin.project_java2.service.TemporaryService;
 import com.example.testlogin.project_java2.service.UploadService;
@@ -19,8 +20,12 @@ import java.time.LocalDateTime;
 public class ScheduledTasks {
 
     private final TemporaryService temporaryService;
-    public ScheduledTasks(TemporaryService temporaryService) {
+    private final VerifyAccountRepo verifyAccountRepo;
+
+    @Autowired
+    public ScheduledTasks(TemporaryService temporaryService, VerifyAccountRepo verifyAccountRepo) {
         this.temporaryService = temporaryService;
+        this.verifyAccountRepo = verifyAccountRepo;
     }
 
     // Thực thi mỗi phút
@@ -29,6 +34,15 @@ public class ScheduledTasks {
         if(temporaryService.count() > 0){
             LocalDateTime timeLimit = LocalDateTime.now().minusMinutes(5);
             temporaryService.deleteOldPaymentToken(timeLimit);
+        }
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void deleteExpiredVerifyAccount() {
+        if(verifyAccountRepo.count() > 0){
+            System.err.println("Handle delete expired verifyAccount...");
+            LocalDateTime timeLimit = LocalDateTime.now().minusMinutes(5);
+            verifyAccountRepo.deleteByCreatedAtBefore(timeLimit);
         }
     }
 }

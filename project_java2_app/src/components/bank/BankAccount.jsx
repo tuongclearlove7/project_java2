@@ -1,13 +1,10 @@
 import React, {useEffect} from 'react';
 import styles from "./BankAccount.module.css";
 import {useDispatch, useSelector} from "react-redux";
-import {getBankAccount, getUser} from "../../redux/action/action";
 import {Link, NavLink, Route} from "react-router-dom";
 import list_nav from '../element/routes';
-import Auth from "../element/Auth";
 import PaymentTable from "../payment/PaymentTable";
-import {getBankAccountUserSuccess} from "../../redux/action/bank_account_action";
-import {fetchBankAccount} from "../payment/fetchData";
+import {formatVNDMoney} from "../payment/functional";
 
 const BankAccount = () => {
 
@@ -28,15 +25,13 @@ const BankAccount = () => {
                             <div
                                 className={`${styles.authorCardCover}`}
                                 style={{
-                                    backgroundImage:
-                                        "url(https://bootdey.com/img/Content/flores-amarillas-wallpaper.jpeg)"
+                                    backgroundImage: "url(https://bootdey.com/img/Content/flores-amarillas-wallpaper.jpeg)"
                                 }}
                             >
                             </div>
                             <div className={`${styles.authorCardProfile}`}>
                                 <div className={`${styles.authorCardAvatar}`}>
-                                    <img
-                                        src="https://bootdey.com/img/Content/avatar/avatar1.png"
+                                    <img src="https://bootdey.com/img/Content/avatar/avatar1.png"
                                         alt="Daniel Adams"
                                     />
                                 </div>
@@ -71,13 +66,14 @@ const BankAccount = () => {
                                         <div>
                                             <i className={`fa fa-money mr-1 text-success ${styles.mr1}`}/>
                                             <div className="d-inline-block font-weight-medium text-uppercase">
-                                                {bank_account?.amount ? bank_account?.amount : 0 + " VNĐ" }
+                                                {bank_account?.amount ?
+                                                formatVNDMoney(bank_account?.amount) :
+                                                formatVNDMoney(0) }
                                             </div>
                                         </div>
                                         <span className="badge badge-secondary">3</span>
                                     </div>
                                 </Link>
-
 
                                 <Link to={"/"} className={`list-group-item ${styles.listGroupItem}`}
                                       target="__blank">
@@ -109,10 +105,8 @@ const BankAccount = () => {
                         </nav>
                     </div>
                 </div>
-
                 {/* Orders Table */}
                     <div className="col-lg-8 pb-5">
-
                         <PaymentTable/>
                     </div>
                 </div>
