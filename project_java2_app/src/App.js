@@ -10,7 +10,7 @@ import {useEffect} from "react";
 function App() {
 
     useEffect(() => {
-        console.log(process.env.URL_SERVER_HOSTNAME);
+        console.log("https://project-java2.onrender.com");
     }, []);
 
 
