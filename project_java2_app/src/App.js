@@ -9,6 +9,10 @@ import {useEffect} from "react";
 
 function App() {
 
+    useEffect(() => {
+        console.log(process.env.URL_SERVER_HOSTNAME);
+    }, []);
+
 
   return (
       <div className="App">
