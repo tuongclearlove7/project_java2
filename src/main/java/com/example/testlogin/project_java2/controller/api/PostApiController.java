@@ -5,6 +5,8 @@ import com.example.testlogin.project_java2.dto.UserDto;
 import com.example.testlogin.project_java2.service.UserService;
 import lombok.AllArgsConstructor;
 import net.minidev.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -24,11 +26,16 @@ import java.util.List;
 public class PostApiController {
 
     UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(PostApiController.class);
+
 
     @PostMapping("/create/user")
     private ResponseEntity<JSONObject> index(
             @Valid @RequestBody UserDto userDto,
             BindingResult res){
+
+        logger.info("Received POST request at /api/v1/create/user");
+        logger.info("UserDto: " + userDto);
 
         if (res.hasErrors()) {
             JSONObject errorObject = new JSONObject();
