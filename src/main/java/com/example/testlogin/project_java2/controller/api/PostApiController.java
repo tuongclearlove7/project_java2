@@ -64,7 +64,7 @@ public class PostApiController {
         try{
             if(email != null || password != null || verify_token != null){
                 if(userService.verifyAccount(email, password, verify_token)){
-                    object.put("message", "Verify successfully");
+                    object.put("message", "Verify successfully, login to your account!");
                     return new ResponseEntity<>(object, HttpStatus.OK);
                 }
             }

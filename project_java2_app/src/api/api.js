@@ -9,7 +9,7 @@ import {getPaymentFailed, getPaymentStart, getPaymentSuccess}
 from "../redux/action/bank_account_action";
 
 export const api = axios.create({
-    baseURL: process.env.REACT_APP_API_LOCALHOST
+    baseURL: process.env.URL_SERVER_HOSTNAME
 });
 
 export const notify = (text, time)=>{
@@ -53,17 +53,17 @@ export const createAccount = async (data, dispatch) => {
             dispatch(registerSuccess(res.data));
         }
     }catch (error) {
-        console.log(error.message);
         dispatch(registerFailed({
             status: error.response?.status,
             statusText: error.response?.statusText,
             data: error.response?.data,
         }));
-        notify(error.message, 2000);
+        notify(error?.response?.data?.message, 2000);
     }
 }
 
-export const verifyAccount = async (data) => {
+export const verifyAccount = async (data, navigate, dispatch) => {
+    dispatch(registerStart());
     try {
         const res = await api.post("/api/v1/verify/user", data,{
             headers: {
@@ -71,9 +71,16 @@ export const verifyAccount = async (data) => {
             }
         });
         if(res.status >= 200 && res.status < 300){
-            console.log("signup sucessfully ",res.data);
+            dispatch(registerSuccess(null));
+            navigate(`/login?message=${res?.data?.message}`);
+            notify(res?.data?.message, 2000);
         }
     }catch (error) {
+        dispatch(registerFailed({
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+        }));
         notify(error.message, 2000);
     }
 }

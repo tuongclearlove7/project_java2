@@ -1,10 +1,13 @@
-import React from 'react';
-import {useSelector} from "react-redux";
+import React, {useState} from 'react';
+import {useDispatch, useSelector} from "react-redux";
 import {notify, verifyAccount} from "../../api/api";
+import {useNavigate} from "react-router-dom";
 
 const Form = (props) => {
 
     const registerUser = useSelector((state) => state.auth.register.registerUser);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const toUrlSearchParams = (data) => {
         const params = new URLSearchParams();
@@ -15,7 +18,7 @@ const Form = (props) => {
         }
         return params;
     }
-    const handleVerify = (e) => {
+    const handleVerify = async (e) => {
         e.preventDefault();
         const form = e.target;
         const verify_token = form.elements?.token.value;
@@ -24,22 +27,27 @@ const Form = (props) => {
             return;
         }
         try{
-            verifyAccount(toUrlSearchParams(
+            props?.setShow(true);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await verifyAccount(toUrlSearchParams(
                 {
                     email : registerUser?.new_user?.email,
                     password : registerUser?.new_user?.password,
                     verify_token : verify_token
                 }
-            )).then();
+            ), navigate, dispatch);
         }catch (ex) {
             console.log(ex);
             notify("Verify account failed!",2000);
         }
+        props?.setShow(false);
     }
+
 
     return (
         <div>
-            {registerUser ? <form onSubmit={handleVerify}>
+            {registerUser ?
+                <form onSubmit={handleVerify}>
                     <div className="row gy-3 gy-md-4 overflow-hidden">
                         <div className="col-12">
                             <label htmlFor="email" className="form-label">

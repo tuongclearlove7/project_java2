@@ -24,6 +24,6 @@ public class SendMailTask implements SendMailService {
         message.setText(content);
         message.setSubject(subject);
         mailSender.send(message);
-        System.out.println("Mail Send...");
+        System.out.println("Send to " + toEmail);
     }
 }

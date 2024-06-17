@@ -1,8 +1,9 @@
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import Cookies from "js-cookie";
 import {loginUser} from "../../api/api";
 import {useDispatch, useSelector} from "react-redux";
+import queryString from 'query-string';
 
 const Login = () => {
 
@@ -11,6 +12,8 @@ const Login = () => {
         email: "",
         password: ""
     });
+    const location = useLocation();
+    const { message } = queryString.parse(location.search);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.login.currentUser);
@@ -19,7 +22,6 @@ const Login = () => {
 
         setLogin({...login, [e.target.name] : e.target.value});
     }
-
     const handleLogin = async (e)=>{
 
         e.preventDefault();
@@ -109,6 +111,12 @@ const Login = () => {
                                                     Log In
                                                 </button>
                                             </div>
+                                        </div>
+                                        <div>
+                                            {message &&
+                                            <b className={"text-success"}>
+                                                {message}
+                                            </b>}
                                         </div>
                                     </div>
                                 </form>

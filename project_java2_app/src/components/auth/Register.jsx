@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {useNavigate} from "react-router-dom";
+import React, {lazy, useEffect, useState} from 'react';
+import {Link, useNavigate} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
 import {createAccount, loginUser, notify, verifyAccount} from "../../api/api";
 import Form from "./Form";
-import {registerSuccess} from "../../redux/action/auth_action";
+import {registerFailed, registerStart, registerSuccess} from "../../redux/action/auth_action";
+import loading from "../../assets/img/loading_dark.gif";
 
 const Register = () => {
 
@@ -15,27 +16,25 @@ const Register = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const registerUser = useSelector((state) => state.auth.register.registerUser);
-
-    useEffect(() => {
-
-        return () => dispatch(registerSuccess(null));
-    }, []);
-
-    useEffect(() => {
-        console.log(registerUser);
-    }, []);
+    const [show, setShow] = useState(false);
 
     const handleInputChange = (e) =>{
 
         setRegister({...register, [e.target.name] : e.target.value});
     }
-    
-
-
     const handleRegister = async (e)=>{
 
         e.preventDefault();
+        // await new Promise(resolve => setTimeout(resolve, 2500));
+        setShow(true);
         await createAccount(register, dispatch);
+        setShow(false);
+    }
+    
+    const clearRegisterUser = () => {
+        dispatch(registerStart());
+        dispatch(registerSuccess(null));
+        dispatch(registerFailed(null));
     }
 
     return (
@@ -48,9 +47,14 @@ const Register = () => {
                                 <div className="row">
                                     <div className="col-12">
                                         <div className="text-center mb-5">
-                                            <a href="#!">
-                                                <h1>SIGN UP</h1>
-                                            </a>
+                                            {!show &&
+                                                <a href="#!">
+                                                    <h1>SIGN UP</h1>
+                                                </a>}
+                                            {show && <img src={loading ? loading : ''}
+                                                     alt={loading ? loading : ''}
+                                                     width="20%"
+                                                />}
                                         </div>
                                     </div>
                                 </div>
@@ -58,6 +62,7 @@ const Register = () => {
                                 <Form handleInputChange={handleInputChange}
                                       handleRegister={handleRegister}
                                       register={register}
+                                      setShow={setShow}
                                       setToken={setToken}
                                       token={token}
                                 />
@@ -66,9 +71,12 @@ const Register = () => {
                                         <hr className="mt-5 mb-4 border-secondary-subtle"/>
                                         <div
                                             className="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-center">
-                                            <a href="#!" className="link-secondary text-decoration-none">
+                                            <a href="#!" >
                                                 Create new account
                                             </a>
+                                            <Link onClick={clearRegisterUser} className="link-secondary text-decoration-none">
+                                                CLEAR SIGN UP DATA
+                                            </Link>
                                             <a href="#!" className="link-secondary text-decoration-none">
                                                 Forgot password
                                             </a>
