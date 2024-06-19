@@ -22,4 +22,6 @@ public interface UserService {
 
     boolean verifyAccount(String email, String password,String token);
 
+    int countVerifyAccountByEmail(String email);
+
 }

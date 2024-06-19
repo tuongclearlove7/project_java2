@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Configuration
 public class TesseractConfig {
 
@@ -15,13 +18,14 @@ public class TesseractConfig {
 
     //Hằng số cho OCR Page Segmentation Mode (PSM)
     public static final int PSM_AUTO = 3;
-
     @Value("${app.tesseract_language}")
     private  String TESSERACT_LANGUAGE;
 
     @Bean
     public Tesseract tesseract() {
+
         Tesseract tesseract = new Tesseract();
+
         tesseract.setLanguage(this.TESSERACT_LANGUAGE);
         tesseract.setDatapath(ProjectJava2Application.getTessDataPath());
         tesseract.setOcrEngineMode(OEM_TESSERACT_ONLY);

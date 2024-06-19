@@ -46,6 +46,11 @@ public class AuthApiController {
     private ResponseEntity<?> login(@RequestBody UserDto userDto){
 
         JSONObject object = new JSONObject();
+
+        if(userService.countByEmail(userDto.getEmail()) < 1){
+            object.put("error", "Have not this account, please sign up!");
+            return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
+        }
         try{
             Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword()));

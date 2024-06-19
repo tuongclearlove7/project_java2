@@ -54,9 +54,6 @@ public class UserPostApiController {
         this.ocrService = ocrService;
     }
 
-
-
-
     @PostMapping("/user_payment")
     private ResponseEntity<JSONObject> payment(@RequestParam("file") MultipartFile file,
     @RequestParam("account_number_sent_to") String account_number_sent_to) throws TesseractException, IOException {

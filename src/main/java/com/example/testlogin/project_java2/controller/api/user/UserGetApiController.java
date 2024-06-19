@@ -123,8 +123,8 @@ public class UserGetApiController {
     }
 
     @GetMapping("/generate_payment_token")
-    private ResponseEntity<?> generate_payment_token(HttpServletRequest request)
-            throws IOException {
+    private ResponseEntity<?> generate_payment_token(HttpServletRequest request) throws IOException {
+
         System.err.println("This request id is: " + request.getSession().getId());
         JSONObject object = new JSONObject();
         try{

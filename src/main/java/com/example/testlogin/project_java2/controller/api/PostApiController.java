@@ -36,20 +36,23 @@ public class PostApiController {
 
         logger.info("Received POST request at /api/v1/create/user");
         logger.info("UserDto: " + userDto);
+        JSONObject object = new JSONObject();
 
         if (res.hasErrors()) {
-            JSONObject errorObject = new JSONObject();
-            errorObject.put("message", "error");
-            errorObject.put("error", res.getAllErrors());
-            return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+            object.put("message", "error");
+            object.put("error", res.getAllErrors());
+            return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
         }
         if(userService.countByEmail(userDto.getEmail()) >= 1){
-            JSONObject errorObject = new JSONObject();
-            errorObject.put("message", "This account already exists!");
-            errorObject.put("error", res.getAllErrors());
-            return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+            object.put("message", "This account already exists!");
+            object.put("error", res.getAllErrors());
+            return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
         }
-        JSONObject object = new JSONObject();
+        if(userService.countVerifyAccountByEmail(userDto.getEmail()) >= 1){
+            object.put("message", "You did sign up for this email and wait for a while to sign up again!");
+            object.put("error", res.getAllErrors());
+            return new ResponseEntity<>(object, HttpStatus.BAD_REQUEST);
+        }
         try{
             userService.sendMailToVerifyUser(userDto);
             object.put("message", "Next step enter your token to do the verify account");

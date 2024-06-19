@@ -104,6 +104,11 @@ public class UserWorker implements UserService{
         return false;
     }
 
+    @Override
+    public int countVerifyAccountByEmail(String email) {
+        return verifyAccountRepo.countVerifyAccountByEmail(email);
+    }
+
     private boolean createUser(String email, String password){
         try{
             UserAccount user = new UserAccount();

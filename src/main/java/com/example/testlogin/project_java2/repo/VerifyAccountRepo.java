@@ -17,6 +17,7 @@ public interface VerifyAccountRepo extends JpaRepository<VerifyAccount,Long> {
                   "AND verify_account_temporaries.verify_token = :token", nativeQuery = true)
     int countVerifyAccountByEmailAndVerifyToken(@Param("email") String email,@Param("token") String token);
 
+    int countVerifyAccountByEmail(String email);
     @Transactional
     @Modifying
     @Query(value ="DELETE FROM verify_account_temporaries " +
